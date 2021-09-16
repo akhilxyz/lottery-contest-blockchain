@@ -73,16 +73,15 @@ export default class App extends Component {
       let value = web3.utils.toWei(this.state.fees, "ether");
      let rs =  await lottery.methods
         .enter()
-        .send({ from: this.state.address, value: value }).then(response => response.json())
-        .then(data => {
-          console.log('Success:', data);
+        .send({ from: this.state.address, value: value }) .then((result) => {
+          return result
         })
         .catch((error) => {
-          console.error('Error:', error);
-        });;
-
-      if (rs === undefined) {
-        return this.setState({ message: "Opps... Something went wrong !" });
+          return error
+          // If the request fails, the Promise will reject with an error.
+        });
+      if (rs.code === 4001) {
+        return this.setState({ message: "User denied transaction !" });
       }
       else {
         this.setState({ message: "your transaction is Completed Successfully" });
@@ -120,7 +119,7 @@ export default class App extends Component {
       } catch (e) {
         // User has denied account access to DApp...
       }
-      window.ethereum.on("accountsChanged", function (accounts) {});
+      window.ethereum.on("accountsChanged", function (accounts) { window.location.reload(); });
     }
     // Legacy DApp Browsers
     else if (window.web3) {
@@ -196,6 +195,9 @@ export default class App extends Component {
             </button>
             <h5 style={{color : "blue"}}>{this.state.message}</h5>
             <br />
+            {
+              this.state.manager === this.state.address ?
+              <>
             <h5>Pick A Winner</h5>
             <button className="btn btn-success" onClick={this.pickWinner}>
               Enter
@@ -205,6 +207,11 @@ export default class App extends Component {
               {errPickWinner} {errorBalance}
             </div>
             <h5>{this.state.WinnerMessage}</h5>
+            </>
+            :
+            <></>
+            }
+            
           </>
         ) : (
           <>
